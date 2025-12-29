@@ -6,8 +6,90 @@
     <title>ZINOTAFX | Direct Install Store</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- تم ربط ملف الأنماط الخارجي -->
-    <link rel="stylesheet" href="styles.css">
+    <style>
+        :root {
+            --bg: #0b0b0b;
+            --surface: #161616;
+            --primary: #00f2fe;
+            --accent: #4facfe;
+            --text-main: #ffffff;
+            --text-dim: #9aa0a6;
+            --border: #2c2c2c;
+            --success: #00e676;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Cairo', sans-serif; }
+        body { background: var(--bg); color: var(--text-main); overflow-x: hidden; }
+
+        .container { width: 100%; max-width: 600px; margin: 0 auto; padding: 0 16px; }
+
+        header { padding: 15px 0; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: var(--bg); z-index: 1000; }
+        .logo { font-size: 1.4rem; font-weight: 900; }
+        .logo span { color: var(--primary); text-shadow: 0 0 10px rgba(0, 242, 254, 0.3); }
+
+        .sidebar { position: fixed; top: 0; right: -100%; width: 280px; height: 100%; background: var(--surface); z-index: 4000; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); padding: 30px 20px; border-left: 1px solid var(--border); }
+        .sidebar.active { right: 0; }
+        .sidebar-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 3900; display: none; backdrop-filter: blur(4px); }
+
+        .search-bar { background: var(--surface); border-radius: 50px; padding: 12px 20px; display: flex; align-items: center; gap: 12px; margin: 10px 0 25px; border: 1px solid var(--border); transition: 0.3s; }
+        .search-bar:focus-within { border-color: var(--primary); box-shadow: 0 0 15px rgba(0, 242, 254, 0.1); }
+        .search-bar input { background: none; border: none; color: white; width: 100%; outline: none; }
+
+        .app-row { display: flex; align-items: center; padding: 16px 0; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.03); transition: 0.2s; }
+        .app-row:active { background: rgba(255,255,255,0.05); transform: scale(0.98); }
+        .app-icon { width: 64px; height: 64px; border-radius: 16px; margin-left: 15px; border: 1px solid var(--border); object-fit: cover; }
+        .app-info { flex: 1; }
+        .app-name { font-weight: 700; font-size: 1.05rem; }
+        .app-meta { font-size: 0.8rem; color: var(--text-dim); margin-top: 3px; }
+
+        .page-modal { display: none; position: fixed; inset: 0; background: var(--bg); z-index: 5000; overflow-y: auto; }
+        .modal-nav { display: flex; align-items: center; padding: 15px; position: sticky; top: 0; background: var(--bg); z-index: 10; }
+        
+        .detail-card { padding: 20px; }
+        .app-header-large { display: flex; gap: 20px; align-items: center; margin-bottom: 30px; }
+        .app-header-large img { width: 95px; height: 95px; border-radius: 22px; box-shadow: 0 12px 25px rgba(0,0,0,0.6); }
+        
+        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 25px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 20px 0; text-align: center; }
+        .stat-item b { font-size: 1.1rem; color: var(--primary); display: block; }
+        .stat-item span { font-size: 0.75rem; color: var(--text-dim); }
+
+        .screenshots { display: flex; gap: 12px; overflow-x: auto; margin: 20px 0; padding-bottom: 15px; scrollbar-width: none; }
+        .screenshots img { width: 220px; height: 130px; border-radius: 16px; object-fit: cover; border: 1px solid var(--border); flex-shrink: 0; }
+
+        .btn-install { background: linear-gradient(135deg, var(--primary), var(--accent)); color: #000; border: none; width: 100%; padding: 18px; border-radius: 20px; font-weight: 900; font-size: 1.2rem; cursor: pointer; transition: 0.4s; box-shadow: 0 10px 20px rgba(0, 242, 254, 0.2); }
+        .btn-install:disabled { background: var(--surface); color: var(--text-dim); cursor: not-allowed; box-shadow: none; }
+
+        .download-ui { display: none; text-align: center; margin-top: 25px; padding: 20px; background: var(--surface); border-radius: 20px; border: 1px solid var(--border); }
+        .progress-container { width: 100%; height: 10px; background: #000; border-radius: 20px; margin: 20px 0; overflow: hidden; border: 1px solid #333; }
+        .progress-bar { width: 0%; height: 100%; background: linear-gradient(90deg, var(--primary), var(--success)); transition: 0.3s; box-shadow: 0 0 15px var(--primary); }
+
+        /* --- أنماط صفحة المطور الجديدة --- */
+        .dev-glass-effect { background: rgba(11, 11, 11, 0.98); backdrop-filter: blur(20px); }
+        .back-circle { background: var(--surface); border: 1px solid var(--border); border-radius: 50%; width: 45px; height: 45px; color: white; display: flex; align-items: center; justify-content: center; margin: 10px; cursor: pointer; }
+        .dev-card-main { background: #1a1a1a; border-radius: 30px; border: 1px solid #333; overflow: hidden; position: relative; padding-bottom: 30px; margin-top: 40px; text-align: center; }
+        .dev-banner { height: 100px; background: linear-gradient(90deg, #00f2fe 0%, #4facfe 100%); opacity: 0.3; }
+        .dev-avatar-wrapper { position: relative; width: 120px; height: 120px; margin: -60px auto 15px; }
+        .dev-avatar-img { width: 100%; height: 100%; border-radius: 50%; border: 4px solid #1a1a1a; background: #000; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .verified-badge { position: absolute; bottom: 5px; right: 5px; background: #00f2fe; color: #000; border-radius: 50%; width: 25px; height: 25px; display: flex; align-items: center; justify-content: center; border: 3px solid #1a1a1a; }
+        .dev-name { font-size: 2rem; font-weight: 900; letter-spacing: 2px; }
+        .dev-name span { color: var(--primary); }
+        .dev-tag { color: var(--text-dim); font-size: 0.9rem; margin-bottom: 25px; }
+        .dev-stats-box { display: flex; justify-content: space-around; background: rgba(0,0,0,0.3); margin: 0 20px 30px; padding: 15px; border-radius: 20px; border: 1px solid #222; }
+        .dev-stat-item b { display: block; font-size: 1.2rem; color: #fff; }
+        .dev-stat-item span { font-size: 0.7rem; color: var(--text-dim); }
+        .social-links-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 0 20px; }
+        .s-link { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 12px; border-radius: 12px; text-decoration: none; color: white; font-weight: 700; font-size: 0.85rem; transition: 0.3s; background: rgba(255,255,255,0.03); border: 1px solid #333; }
+        .s-link.tg:hover { background: #0088cc; box-shadow: 0 0 15px rgba(0,136,204,0.4); }
+        .s-link.yt:hover { background: #ff0000; box-shadow: 0 0 15px rgba(255,0,0,0.4); }
+        .s-link.tk:hover { background: #000; border-color: #fff; }
+        .s-link.ig:hover { background: linear-gradient(45deg, #f09433, #bc1888); }
+        .dev-footer-text { margin-top: 30px; font-size: 0.7rem; color: #444; }
+
+        @keyframes slideUp {
+            from { transform: translateY(100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+    </style>
 </head>
 <body>
 
@@ -50,6 +132,180 @@
 
 <div id="devPageContainer"></div>
 
-<script src="storeData.js"></script>
+<script>
+    const appsData = [
+        { 
+            id: 1, 
+            cat: 'action', 
+            name: "ZINOTAFX MACRO V4", 
+            ver: "4.0.2", 
+            size: "12.5 MB", 
+            rate: "4.9", 
+            downloads: "50K+", 
+            icon: "https://images.unsplash.com/photo-1614680376573-df3480f0c6ff?w=150", 
+            url: "https://download1638.mediafire.com/ratpww1615ogVBIZdlfoDej3bzZuO7F1TBMQfvAYeFhEzGFWp_Apx8i39-Nq950ZY-ISsvglBcN881zLZ8s3W4HBo1OSUItjFxvpWaFTe29HOHxxHQ3GltogtDvi2uWsNt_8x_yK3c4Hd1pEr0KBg-7ffqtdfXGtgaVvT4grjD1i-G0/8zdgcgqhpy1kifx/ZINOTAFX+MACRO_4.0.apk" 
+        },
+        { 
+            id: 2, 
+            cat: 'action', 
+            name: "FREE FIRE MOD VIP", 
+            ver: "1.104", 
+            size: "450 MB", 
+            rate: "4.8", 
+            downloads: "100K+", 
+            icon: "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=150", 
+            url: "#" 
+        }
+    ];
+
+    // تهيئة الأيقونات عند تحميل الصفحة
+    lucide.createIcons();
+
+    function toggleSidebar() {
+        const side = document.getElementById('sidebar');
+        const over = document.getElementById('overlay');
+        side.classList.toggle('active');
+        over.style.display = side.classList.contains('active') ? 'block' : 'none';
+    }
+
+    function renderStore(data = appsData) {
+        const list = document.getElementById('appList');
+        list.innerHTML = data.map(app => `
+            <div class="app-row" onclick="openPage(${app.id})">
+                <img src="${app.icon}" class="app-icon">
+                <div class="app-info">
+                    <div class="app-name">${app.name}</div>
+                    <div class="app-meta">${app.cat === 'action' ? 'ألعاب' : 'أدوات'} • ${app.size} • ★ ${app.rate}</div>
+                </div>
+                <i data-lucide="chevron-left" size="18" style="color:var(--text-dim)"></i>
+            </div>
+        `).join('');
+        lucide.createIcons();
+    }
+
+    function openPage(id) {
+        const app = appsData.find(a => a.id === id);
+        const body = document.getElementById('modalBody');
+        body.innerHTML = `
+            <div class="app-header-large">
+                <img src="${app.icon}">
+                <div>
+                    <h1 style="font-size:1.6rem; line-height:1.2;">${app.name}</h1>
+                    <p onclick="openDevPage()" style="color:var(--primary); font-weight:700; margin-top:5px; cursor:pointer; display:inline-flex; align-items:center; gap:5px;">
+                        ZINOTAFX Official <i data-lucide="badge-check" size="16"></i>
+                    </p>
+                </div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-item"><b>${app.rate} ★</b><span>التقييم</span></div>
+                <div class="stat-item"><b>${app.size}</b><span>المساحة</span></div>
+                <div class="stat-item"><b>${app.downloads}</b><span>تثبيت</span></div>
+            </div>
+
+            <div class="screenshots">
+                <img src="https://images.unsplash.com/photo-1542751371-adc38448a05e?w=400">
+                <img src="https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=400">
+            </div>
+
+            <div style="margin: 25px 0; border-right: 4px solid var(--primary); padding-right: 15px;">
+                <h3 style="margin-bottom:8px;">الوصف</h3>
+                <p style="color:var(--text-dim); line-height:1.6; font-size:0.95rem;">
+                    تم فحص هذا الملف وتوثيقه بواسطة ZINOTAFX. يمنحك مميزات حصرية وأداء عالي الاستقرار.
+                </p>
+            </div>
+
+            <button class="btn-install" id="installBtn" onclick="startDownload('${app.url}')">تثبيت مباشر</button>
+
+            <div id="dlSection" class="download-ui">
+                <p id="dlStatus" style="font-weight:700;">جاري التحقق من الحزمة...</p>
+                <div class="progress-container"><div id="pBar" class="progress-bar"></div></div>
+                <p style="color:var(--primary); font-size:1.2rem; font-weight:900;"><span id="pNum">0</span>%</p>
+            </div>
+        `;
+        document.getElementById('pageModal').style.display = 'block';
+        lucide.createIcons();
+    }
+
+    function openDevPage() {
+        const container = document.getElementById('devPageContainer');
+        container.innerHTML = `
+            <div id="devPageModal" class="page-modal dev-glass-effect" style="display:block; z-index:9000;">
+                <div class="modal-nav">
+                    <button onclick="closeDevPage()" class="back-circle"><i data-lucide="arrow-right"></i></button>
+                </div>
+                <div class="container">
+                    <div class="dev-card-main" style="animation: slideUp 0.4s ease-out;">
+                        <div class="dev-banner"></div>
+                        <div class="dev-avatar-wrapper">
+                            <img src="https://i.ibb.co/LhYm0vH/zinota-logo.png" class="dev-avatar-img">
+                            <div class="verified-badge"><i data-lucide="check"></i></div>
+                        </div>
+                        <h1 class="dev-name">ZINOTA<span>FX</span></h1>
+                        <p class="dev-tag">Developer & Premium Modder</p>
+                        <div class="dev-stats-box">
+                            <div class="dev-stat-item"><b>150+</b><span>مشروع</span></div>
+                            <div class="dev-stat-item"><b>1M+</b><span>تنزيل</span></div>
+                            <div class="dev-stat-item"><b>2025</b><span>تأسيس</span></div>
+                        </div>
+                        <div class="social-links-grid">
+                            <a href="https://t.me/zinotafx_21" target="_blank" class="s-link tg"><i data-lucide="send"></i> تليجرام</a>
+                            <a href="https://youtube.com/@zinotafx.21" target="_blank" class="s-link yt"><i data-lucide="youtube"></i> يوتيوب</a>
+                            <a href="https://tiktok.com/@zinotafx.21" target="_blank" class="s-link tk"><i data-lucide="music"></i> تيك توك</a>
+                            <a href="https://instagram.com/zinotafx.21" target="_blank" class="s-link ig"><i data-lucide="instagram"></i> إنستقرام</a>
+                        </div>
+                        <p class="dev-footer-text">© 2025 ZINOTAFX - جميع الحقوق محفوظة</p>
+                    </div>
+                </div>
+            </div>
+        `;
+        lucide.createIcons();
+    }
+
+    function closeDevPage() {
+        document.getElementById('devPageContainer').innerHTML = '';
+    }
+
+    function startDownload(url) {
+        if(url === "#") { alert("الرابط غير متوفر حالياً."); return; }
+        const btn = document.getElementById('installBtn');
+        const dlSection = document.getElementById('dlSection');
+        const pBar = document.getElementById('pBar');
+        const pNum = document.getElementById('pNum');
+        const status = document.getElementById('dlStatus');
+
+        btn.disabled = true;
+        dlSection.style.display = 'block';
+
+        let width = 0;
+        const interval = setInterval(() => {
+            if (width >= 100) {
+                clearInterval(interval);
+                status.innerText = "اكتمل الفحص! بدأ التحميل... ✅";
+                window.location.href = url;
+            } else {
+                width += Math.floor(Math.random() * 10) + 2;
+                if (width > 100) width = 100;
+                pBar.style.width = width + '%';
+                pNum.innerText = width;
+            }
+        }, 300);
+    }
+
+    function closePage() { document.getElementById('pageModal').style.display = 'none'; }
+
+    function searchApps() {
+        const q = document.getElementById('searchInp').value.toLowerCase();
+        renderStore(appsData.filter(a => a.name.toLowerCase().includes(q)));
+    }
+
+    function filterCategory(cat) {
+        toggleSidebar();
+        if(cat === 'all') renderStore(appsData);
+        else renderStore(appsData.filter(a => a.cat === cat));
+    }
+
+    window.onload = () => renderStore();
+</script>
 </body>
 </html>
