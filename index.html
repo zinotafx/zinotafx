@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZINOTAFX | Direct Install Store</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- تم ربط ملف الأنماط الخارجي -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="sidebar-overlay" id="overlay" onclick="toggleSidebar()"></div>
+<div class="sidebar" id="sidebar">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:40px;">
+        <h2 style="color:var(--primary)">التصنيفات</h2>
+        <i data-lucide="x" onclick="toggleSidebar()" style="cursor:pointer"></i>
+    </div>
+    <div onclick="filterCategory('all')" style="padding:15px 0; border-bottom:1px solid #222; cursor:pointer">كل التطبيقات</div>
+    <div onclick="filterCategory('action')" style="padding:15px 0; border-bottom:1px solid #222; cursor:pointer">ألعاب الأكشن</div>
+</div>
+
+<div class="container">
+    <header>
+        <div class="logo">ZINOTA<span>FX</span></div>
+        <div style="display:flex; gap:15px;">
+            <i data-lucide="bell" size="22"></i>
+            <i data-lucide="menu" onclick="toggleSidebar()" style="cursor:pointer"></i>
+        </div>
+    </header>
+
+    <div class="search-bar">
+        <i data-lucide="search" size="18" style="color:var(--text-dim)"></i>
+        <input type="text" id="searchInp" onkeyup="searchApps()" placeholder="ابحث عن المود أو الأداة...">
+    </div>
+
+    <div class="app-list" id="appList"></div>
+</div>
+
+<div id="pageModal" class="page-modal">
+    <div class="modal-nav">
+        <button onclick="closePage()" style="background:none; border:none; color:white; cursor:pointer;"><i data-lucide="arrow-right" size="28"></i></button>
+        <span style="margin-right:15px; font-weight:700;">تفاصيل المثبت</span>
+    </div>
+    <div class="container">
+        <div id="modalBody" class="detail-card"></div>
+    </div>
+</div>
+
+<div id="devPageContainer"></div>
+
+<script src="storeData.js"></script>
+</body>
+</html>
